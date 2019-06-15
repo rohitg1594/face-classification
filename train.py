@@ -127,7 +127,7 @@ if __name__ == "__main__":
     data_path = args.data_path
     img_dir = join(data_path, "lfw-deepfunneled")
     device = torch.device("cuda:{}".format(args.device) if torch.cuda.is_available() and args.device != "cpu" else "cpu")
-    print(f"Using device: {device}")
+    print("Using device: {}".format(device))
 
     cross_dataset = get_dataset(data_path)
 
