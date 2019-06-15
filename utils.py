@@ -96,7 +96,7 @@ def create_dataset(data_path, img_dir):
     return dataset
 
 
-def get_dataset(data_path):
+def get_dataset(data_path, img_dir):
     cross_dataset_fname = join(data_path, 'cache/cross_dataset.pkl')
     if os.path.exists(join(data_path, 'cache/cross_dataset.pkl')):
         with open(cross_dataset_fname, 'rb') as f:

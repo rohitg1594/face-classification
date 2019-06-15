@@ -104,7 +104,7 @@ def get_args():
     parser.add_argument("--rescale", type=int, default=256)
     parser.add_argument("--crop", type=int, default=224)
     parser.add_argument("--num-workers", type=int, default=4)
-    parser.add_argument("--num-epochs", type=int, default=25)
+    parser.add_argument("--num-epochs", type=int, default=50)
     parser.add_argument("--device", type=str, default=0)
     parser.add_argument("--train-sets", type=eval, default=list(range(9)))
     parser.add_argument("--valid-sets", type=eval, default=[9])
@@ -124,7 +124,7 @@ if __name__ == "__main__":
     device = torch.device("cuda:{}".format(args.device) if torch.cuda.is_available() and args.device != "cpu" else "cpu")
     print("Using device: {}".format(device))
 
-    cross_dataset = get_dataset(data_path)
+    cross_dataset = get_dataset(data_path, img_dir)
 
     train_dataset = FaceDataset(cross_dataset,
                                 args.train_sets,
@@ -151,7 +151,12 @@ if __name__ == "__main__":
     criterion = nn.BCEWithLogitsLoss()
     optimizer_ft = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
 
-    # Decay LR by a factor of 0.1 every 7 epochs
-    exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft, step_size=7, gamma=0.1)
+    # Decay LR by a factor of 0.1 every 10 epochs
+    exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft, step_size=10, gamma=0.1)
 
     model = train_model(args, model, criterion, optimizer_ft, exp_lr_scheduler, num_epochs=args.num_epochs)
+
+    models_dir = join(data_path, 'models')
+    if not os.path.exists(models_dir):
+        os.makedirs(models_dir)
+    torch.save(model, join(models_dir, '{}.pt'.format(args.exp_name)))
