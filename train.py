@@ -44,7 +44,7 @@ def train_model(args, model, criterion, optimizer, scheduler, num_epochs=25):
 
             # Iterate over data.
             for i, sample in enumerate(dataloaders[phase]):
-                print(f"Batch Number: {i}")
+                print("Batch Number: {}".format(i))
                 imgs1, imgs2, labels = sample['img1'], sample['img2'], sample['label']
                 imgs1 = imgs1.to(device)
                 imgs2 = imgs2.to(device)
@@ -67,11 +67,7 @@ def train_model(args, model, criterion, optimizer, scheduler, num_epochs=25):
                 running_loss += loss.item() * imgs1.size(0)
                 correct = torch.sum(preds == labels.data.double())
                 running_corrects += correct
-                print(f"Labels: {labels.data},"
-                      f" Preds: {preds.data},"
-                      f" Correct: {correct},"
-                      f" Running Corrects: {running_corrects},"
-                      f" Running Acc: {running_corrects.double() / (args.batch_size * (i + 1))}")
+                print("Running Acc: {}".format(running_corrects.double() / (args.batch_size * (i + 1))))
 
             epoch_loss = running_loss / dataset_sizes[phase]
             epoch_acc = running_corrects.double() / dataset_sizes[phase]
@@ -130,7 +126,7 @@ if __name__ == "__main__":
     args = get_args()
     data_path = args.data_path
     img_dir = join(data_path, "lfw-deepfunneled")
-    device = torch.device(f"cuda:{args.device}" if torch.cuda.is_available() and args.device != "cpu" else "cpu")
+    device = torch.device("cuda:{}".format(args.device) if torch.cuda.is_available() and args.device != "cpu" else "cpu")
     print(f"Using device: {device}")
 
     cross_dataset = get_dataset(data_path)
@@ -151,7 +147,7 @@ if __name__ == "__main__":
                                                       num_workers=4)}
     dataset_sizes = {'train': len(train_dataset),
                      'val': len(valid_dataset)}
-    print(f"Dataset Sizes: {dataset_sizes}")
+    print("Dataset Sizes: {}".format(dataset_sizes))
 
     model = PairFaceClassifier(base_model=args.base_model, hidden_ftrs=args.hidden_ftrs).double().to(device)
     criterion = nn.BCEWithLogitsLoss()

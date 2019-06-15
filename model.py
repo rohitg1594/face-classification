@@ -21,7 +21,7 @@ class PairFaceClassifier(nn.Module):
         elif base_model == 'squeezenet':
             self.model_conv = torchvision.models.squeezenet1_0(pretrained=True)
         else:
-            raise RuntimeError(f"{base_model} not supported.")
+            raise RuntimeError("{} not supported.".format(base_model))
 
         num_ftrs = self.model_conv.fc.in_features
         self.model_conv.fc = nn.Linear(num_ftrs, hidden_ftrs)
