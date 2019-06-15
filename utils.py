@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 def get_image(name, img_dir, img_id):
     img_name = '0' * (4 - len(img_id)) + img_id
 
-    return io.imread(join(img_dir, name, f'{name}_{img_name}.jpg'))
+    return io.imread(join(img_dir, name, '{}_{}.jpg'.format(name, img_name)))
 
 
 def visualize_dataset(dataset, n=5):
