@@ -1,10 +1,16 @@
 # face-classification
-Nanonets - Face classification interview problem
+Nanonets - Face classification interview problem.
 
 ## Setup
-
 Run ```./setup.sh``` to setup the data dir. It will download the data from LFW's website. Depending on internet
 connection, might take some time.
+
+## Dataset
+The dataset is constructed based on the pairs.txt file on LFW website. It is split into 10 subsets of 600 pairs each.
+Of these 300 are matchin and 300 do not match. We take the first 9 subets for training and the last subset for validation.
+This results in a train set of size 5400 and a valid set of size 600. Valid and train sets can be changed using 
+```--valid-sets``` and ```--test-sets``` options in ```train.py```.
+ 
 
 ## Training
 
@@ -14,6 +20,6 @@ training with different settings, run ```python3 train.py --help``` to see a lis
 
 ## Architecture
 
-It is a simple architecture based on pre-trained feature extractors.
-
-
+It is a simple architecture based on pre-trained feature extractors (default is resnet18, can change using 
+```--base-model``` option). The two images in a pair are sent to base model to extract features. The features are 
+concatenated and passed through a MLP with one hidden layer with relu activation and dropout.
