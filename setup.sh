@@ -14,7 +14,7 @@ wget ${lfw_url}
 wget ${lfw_funnel_url}
 wget ${pairs_url}
 
-tar -xzvf lfw.tar.gz
+tar -xzvf lfw.tgz
 tar -xzvf lfw-deepfunneled.tgz
 
 rm lfw.tar.gz
