@@ -150,7 +150,7 @@ if __name__ == "__main__":
                                                         num_workers=args.num_workers),
                    'val': torch.utils.data.DataLoader(valid_dataset,
                                                       batch_size=args.batch_size,
-                                                      shuffle=False,
+                                                      shuffle=True,
                                                       num_workers=args.num_workers)}
     dataset_sizes = {'train': len(train_dataset),
                      'val': len(valid_dataset)}
