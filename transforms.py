@@ -1,4 +1,3 @@
-from torchvision import transforms, utils
 from skimage import io, transform
 import numpy as np
 

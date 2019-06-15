@@ -103,6 +103,7 @@ def get_args():
     parser.add_argument("--base-model", type=str, default='resnet18')
     parser.add_argument("--hidden-ftrs", type=int, default=256)
     parser.add_argument("--num-epochs", type=int, default=25)
+    parser.add_argument("--device", type=int, default=0)
     args = parser.parse_args()
 
     return args
@@ -126,7 +127,7 @@ if __name__ == "__main__":
     args = get_args()
     data_path = args.data_path
     img_dir = join(data_path, "lfw-deepfunneled")
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    device = torch.device(f"cuda:{args.device}" if torch.cuda.is_available() and args.device != "cpu" else "cpu")
     print(f"Using device: {device}")
 
     cross_dataset = get_dataset(data_path)

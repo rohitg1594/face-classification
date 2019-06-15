@@ -6,7 +6,8 @@ import torch
 class PairFaceClassifier(nn.Module):
     """Classfies if two images belong to same person.
 
-        Base model: CNN model that extracts features of the images.
+        base_model: CNN model that extracts features of the images.
+        hidden_ftrs: Number of hidden ftrs to output from base_model.
     """
 
     def __init__(self, base_model='resnet18', hidden_ftrs=256):

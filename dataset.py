@@ -1,4 +1,4 @@
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset
 
 
 class FaceDataset(Dataset):
@@ -9,8 +9,7 @@ class FaceDataset(Dataset):
         Args:
             full_dataset (list of dict): Full cross validation dataset.
             include_subsets (list): Subsets to be included in dataloader.
-            transform (callable, optional): Optional transform to be applied
-                on a sample.
+            transform (callable, optional): Optional transform to be applied on a sample.
         """
         self.dataset = self._process_dataset(full_dataset, include_subsets)
         self.transform = transform
