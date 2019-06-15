@@ -104,7 +104,7 @@ def get_args():
     parser.add_argument("--base-model", type=str, default='resnet18')
     parser.add_argument("--hidden-ftrs", type=int, default=256)
     parser.add_argument("--num-epochs", type=int, default=25)
-    parser.add_argument("--device", type=int, default=0)
+    parser.add_argument("--device", type=str, default=0)
     args = parser.parse_args()
 
     return args
