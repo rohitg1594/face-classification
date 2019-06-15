@@ -101,7 +101,9 @@ def get_args():
     parser.add_argument("--batch-size", type=int, default=16)
     parser.add_argument("--lr", type=float, default=0.001)
     parser.add_argument("--momentum", type=float, default=0.9)
-    parser.add_argument("--base-model", type=str, default='resnet18')
+    parser.add_argument("--base-model", type=str,
+                        choices=['alexnet', 'squeezenet', 'resnet18', 'vgg16'],
+                        default='resnet18')
     parser.add_argument("--hidden-ftrs", type=int, default=256)
     parser.add_argument("--num-epochs", type=int, default=25)
     parser.add_argument("--device", type=str, default=0)

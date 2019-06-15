@@ -1,4 +1,4 @@
-from skimage import io, transform
+from skimage import transform
 import numpy as np
 
 

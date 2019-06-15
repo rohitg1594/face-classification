@@ -16,6 +16,12 @@ class PairFaceClassifier(nn.Module):
             self.model_conv = torchvision.models.resnet18(pretrained=True)
         elif base_model == 'alexnet':
             self.model_conv = torchvision.models.alexnet(pretrained=True)
+        elif base_model == 'vgg16':
+            self.model_conv = torchvision.models.vgg11(pretrained=True)
+        elif base_model == 'squeezenet':
+            self.model_conv = torchvision.models.squeezenet1_0(pretrained=True)
+        else:
+            raise RuntimeError(f"{base_model} not supported.")
 
         num_ftrs = self.model_conv.fc.in_features
         self.model_conv.fc = nn.Linear(num_ftrs, hidden_ftrs)
