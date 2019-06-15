@@ -9,7 +9,7 @@ class PairFaceClassifier(nn.Module):
         Base model: CNN model that extracts features of the images.
     """
 
-    def __init__(self, base_model='resnet18', hidden_ftrs=128):
+    def __init__(self, base_model='resnet18', hidden_ftrs=256):
         super(PairFaceClassifier, self).__init__()
         if base_model == 'resnet18':
             self.model_conv = torchvision.models.resnet18(pretrained=True)
@@ -27,6 +27,6 @@ class PairFaceClassifier(nn.Module):
         out1 = self.model_conv(img1)
         out2 = self.model_conv(img2)
 
-        score = self.fc(torch.cat((out1, out2), dim=-1))
+        score = self.fc(torch.cat((out1, out2), dim=-1)).squeeze(1)
 
         return score

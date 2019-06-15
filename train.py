@@ -31,13 +31,12 @@ def train_model(args, model, criterion, optimizer, scheduler, num_epochs=25):
         print('Epoch {}/{}'.format(epoch, num_epochs - 1))
         print('-' * 10)
 
-        # Each epoch has a training and validation phase
         for phase in ['train', 'val']:
             if phase == 'train':
                 scheduler.step()
-                model.train()  # Set model to training mode
+                model.train()
             else:
-                model.eval()   # Set model to evaluate mode
+                model.eval()
 
             running_loss = 0.0
             running_corrects = 0
@@ -54,26 +53,29 @@ def train_model(args, model, criterion, optimizer, scheduler, num_epochs=25):
                 optimizer.zero_grad()
 
                 # forward
-                # track history if only in train
                 with torch.set_grad_enabled(phase == 'train'):
                     outputs = model((imgs1, imgs2))
                     preds = torch.gt(outputs, 0).double()
-                    loss = criterion(outputs, labels.unsqueeze(dim=1).double())
+                    loss = criterion(outputs, labels.double())
 
-                    # backward + optimize only if in training phase
                     if phase == 'train':
                         loss.backward()
                         optimizer.step()
 
                 # statistics
                 running_loss += loss.item() * imgs1.size(0)
-                running_corrects += torch.sum(preds == labels.data.double())
+                correct = torch.sum(preds == labels.data.double())
+                running_corrects += correct
+                print(f"Labels: {labels.data},"
+                      f" Preds: {preds.data},"
+                      f" Correct: {correct},"
+                      f" Running Corrects: {running_corrects},"
+                      f" Running Acc: {running_corrects.double() / (args.batch_size * (i + 1))}")
 
             epoch_loss = running_loss / dataset_sizes[phase]
             epoch_acc = running_corrects.double() / dataset_sizes[phase]
 
-            print('{} Loss: {:.4f} Acc: {:.4f}'.format(
-                phase, epoch_loss, epoch_acc))
+            print('{} Loss: {:.4f} Acc: {:.4f}'.format(phase, epoch_loss, epoch_acc))
 
             # deep copy the model
             if phase == 'val' and epoch_acc > best_acc:
@@ -92,19 +94,21 @@ def train_model(args, model, criterion, optimizer, scheduler, num_epochs=25):
     return model
 
 
-if __name__ == "__main__":
+def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data-path", type=str)
     parser.add_argument("--batch-size", type=int, default=16)
     parser.add_argument("--lr", type=float, default=0.001)
     parser.add_argument("--momentum", type=float, default=0.9)
+    parser.add_argument("--base-model", type=str, default='resnet18')
+    parser.add_argument("--hidden-ftrs", type=int, default=256)
     parser.add_argument("--num-epochs", type=int, default=25)
     args = parser.parse_args()
 
-    data_path = args.data_path
-    img_dir = join(data_path, "lfw-deepfunneled")
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    return args
 
+
+def get_dataset(data_path):
     cross_dataset_fname = join(data_path, 'cache/cross_dataset.pkl')
     if os.path.exists(join(data_path, 'cache/cross_dataset.pkl')):
         with open(cross_dataset_fname, 'rb') as f:
@@ -114,19 +118,38 @@ if __name__ == "__main__":
         with open(cross_dataset_fname, 'wb') as f:
             pickle.dump(cross_dataset, f)
 
+    return cross_dataset
+
+
+if __name__ == "__main__":
+
+    args = get_args()
+    data_path = args.data_path
+    img_dir = join(data_path, "lfw-deepfunneled")
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    print(f"Using device: {device}")
+
+    cross_dataset = get_dataset(data_path)
+
     train_dataset = FaceDataset(cross_dataset,
-                                list(range(1)),
+                                list(range(9)),
                                 transform=transforms.Compose([Rescale(256), RandomCrop(224), ToTensor()]))
     valid_dataset = FaceDataset(cross_dataset,
                                 [9],
                                 transform=transforms.Compose([Rescale(256), RandomCrop(224), ToTensor()]))
-    dataloaders = {'train': torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=4),
-                   'val': torch.utils.data.DataLoader(valid_dataset, batch_size=args.batch_size, shuffle=True, num_workers=4)}
+    dataloaders = {'train': torch.utils.data.DataLoader(train_dataset,
+                                                        batch_size=args.batch_size,
+                                                        shuffle=True,
+                                                        num_workers=4),
+                   'val': torch.utils.data.DataLoader(valid_dataset,
+                                                      batch_size=args.batch_size,
+                                                      shuffle=True,
+                                                      num_workers=4)}
     dataset_sizes = {'train': len(train_dataset),
                      'val': len(valid_dataset)}
     print(f"Dataset Sizes: {dataset_sizes}")
 
-    model = PairFaceClassifier().double().to(device)
+    model = PairFaceClassifier(base_model=args.base_model, hidden_ftrs=args.hidden_ftrs).double().to(device)
     criterion = nn.BCEWithLogitsLoss()
     optimizer_ft = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
 
