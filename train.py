@@ -21,7 +21,7 @@ from dataset import FaceDataset
 from transforms import *
 
 
-def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
+def train_model(args, model, criterion, optimizer, scheduler, num_epochs=25):
     since = time.time()
 
     best_model_wts = copy.deepcopy(model.state_dict())
@@ -57,8 +57,7 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
                 # track history if only in train
                 with torch.set_grad_enabled(phase == 'train'):
                     outputs = model((imgs1, imgs2))
-                    _, preds = torch.max(outputs, 1)
-                    print(f"preds: {preds}")
+                    preds = torch.gt(outputs, 0).double()
                     loss = criterion(outputs, labels.unsqueeze(dim=1).double())
 
                     # backward + optimize only if in training phase
@@ -68,7 +67,7 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
 
                 # statistics
                 running_loss += loss.item() * imgs1.size(0)
-                running_corrects += torch.sum(preds == labels.data)
+                running_corrects += torch.sum(preds == labels.data.double())
 
             epoch_loss = running_loss / dataset_sizes[phase]
             epoch_acc = running_corrects.double() / dataset_sizes[phase]
@@ -96,6 +95,10 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--data-path", type=str)
+    parser.add_argument("--batch-size", type=int, default=16)
+    parser.add_argument("--lr", type=float, default=0.001)
+    parser.add_argument("--momentum", type=float, default=0.9)
+    parser.add_argument("--num-epochs", type=int, default=25)
     args = parser.parse_args()
 
     data_path = args.data_path
@@ -117,17 +120,17 @@ if __name__ == "__main__":
     valid_dataset = FaceDataset(cross_dataset,
                                 [9],
                                 transform=transforms.Compose([Rescale(256), RandomCrop(224), ToTensor()]))
-    dataloaders = {'train': torch.utils.data.DataLoader(train_dataset, batch_size=16, shuffle=True, num_workers=4),
-                   'val': torch.utils.data.DataLoader(valid_dataset, batch_size=16, shuffle=True, num_workers=4)}
+    dataloaders = {'train': torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=4),
+                   'val': torch.utils.data.DataLoader(valid_dataset, batch_size=args.batch_size, shuffle=True, num_workers=4)}
     dataset_sizes = {'train': len(train_dataset),
                      'val': len(valid_dataset)}
     print(f"Dataset Sizes: {dataset_sizes}")
 
     model = PairFaceClassifier().double().to(device)
     criterion = nn.BCEWithLogitsLoss()
-    optimizer_ft = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+    optimizer_ft = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
 
     # Decay LR by a factor of 0.1 every 7 epochs
     exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft, step_size=7, gamma=0.1)
 
-    model = train_model(model, criterion, optimizer_ft, exp_lr_scheduler, num_epochs=25)
+    model = train_model(args, model, criterion, optimizer_ft, exp_lr_scheduler, num_epochs=args.num_epochs)
