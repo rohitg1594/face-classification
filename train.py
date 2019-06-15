@@ -67,7 +67,9 @@ def train_model(args, model, criterion, optimizer, scheduler, num_epochs=25):
                 running_loss += loss.item() * imgs1.size(0)
                 correct = torch.sum(preds == labels.data.double())
                 running_corrects += correct
-                print("Running Acc: {}".format(running_corrects.double() / (args.batch_size * (i + 1))))
+
+                if args.verbose:
+                    print("Running Acc: {}".format(running_corrects.double() / (args.batch_size * (i + 1))))
 
             epoch_loss = running_loss / dataset_sizes[phase]
             epoch_acc = running_corrects.double() / dataset_sizes[phase]
@@ -108,6 +110,8 @@ def get_args():
     parser.add_argument("--device", type=str, default=0)
     parser.add_argument("--train-sets", type=eval, default=list(range(9)))
     parser.add_argument("--valid-sets", type=eval, default=[9])
+    parser.add_argument("--verbose", action="store_true", default=False)
+    parser.add_argument("--feature-extract", action="store_true", default=False)
     args = parser.parse_args()
 
     return args
@@ -156,7 +160,9 @@ if __name__ == "__main__":
                      'val': len(valid_dataset)}
     print("Dataset Sizes: {}".format(dataset_sizes))
 
-    model = PairFaceClassifier(base_model=args.base_model, hidden_ftrs=args.hidden_ftrs).double().to(device)
+    model = PairFaceClassifier(base_model=args.base_model,
+                               hidden_ftrs=args.hidden_ftrs,
+                               feature_extract=args.feature_extract).double().to(device)
     criterion = nn.BCEWithLogitsLoss()
     optimizer_ft = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
 
