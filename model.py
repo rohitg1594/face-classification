@@ -42,14 +42,17 @@ class PairFaceClassifier(nn.Module):
         self.dp = nn.Dropout(dropout)
         self.relu = nn.ReLU()
 
+        self.classifier = nn.Sequential(self.fc1,
+                                        self.relu,
+                                        self.dp,
+                                        self.fc2)
+
     def forward(self, input):
         img1, img2 = input
 
         out1 = self.model_conv(img1)
         out2 = self.model_conv(img2)
 
-        x = self.fc(torch.cat((out1, out2), dim=-1))
-        x = self.dp(self.relu(x))
-        score = self.fc(x)
+        score = self.classifier(torch.cat((out1, out2), dim=-1))
 
-        return score
+        return score.squeeze(1)
