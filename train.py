@@ -94,6 +94,11 @@ def get_args():
 
     # Data params
     parser.add_argument("--data-path", type=str, default='data')
+    parser.add_argument("--img-type",
+                        type=str,
+                        choices=["lfw", "lfw-deepfunneled"],
+                        default="lfw-deepfunneled",
+                        help="use regular images or deep funneled")
     parser.add_argument("--train-sets", type=eval, default=list(range(9)), help="list of subsets to use for training")
     parser.add_argument("--valid-sets", type=eval, default=[9], help="list of subsets to use for validation")
     parser.add_argument("--num-workers", type=int, default=4)
@@ -102,7 +107,7 @@ def get_args():
 
     # Model type
     parser.add_argument("--base-model", type=str,
-                        choices=['alexnet', 'squeezenet', 'resnet18', 'vgg16'],
+                        choices=['alexnet', 'resnet18', 'vgg16'],
                         default='resnet18')
     parser.add_argument("--feature-extract",
                         action="store_true",
@@ -113,7 +118,6 @@ def get_args():
     parser.add_argument("--lr", type=float, default=0.001)
     parser.add_argument("--dropout", type=float, default=0.3)
     parser.add_argument("--momentum", type=float, default=0.9)
-    parser.add_argument("--hidden-ftrs", type=int, default=256)
 
     # Training params
     parser.add_argument("--batch-size", type=int, default=16)
@@ -129,15 +133,7 @@ def get_args():
     return args
 
 
-if __name__ == "__main__":
-
-    args = get_args()
-    data_path = args.data_path
-    img_dir = join(data_path, "lfw-deepfunneled")
-    device = torch.device("cuda:{}".format(args.device) if torch.cuda.is_available() and args.device != "cpu" else "cpu")
-    print("Using device: {}".format(device))
-
-    cross_dataset = get_dataset(data_path, img_dir)
+def get_dataloaders(args, cross_dataset):
 
     train_dataset = FaceDataset(cross_dataset,
                                 args.train_sets,
@@ -155,10 +151,23 @@ if __name__ == "__main__":
                                                       num_workers=args.num_workers)}
     dataset_sizes = {'train': len(train_dataset),
                      'val': len(valid_dataset)}
+
+    return dataloaders, dataset_sizes
+
+
+if __name__ == "__main__":
+
+    args = get_args()
+    data_path = args.data_path
+    img_dir = join(data_path, args.img_type)
+    device = torch.device("cuda:{}".format(args.device) if torch.cuda.is_available() and args.device != "cpu" else "cpu")
+    print("Using device: {}".format(device))
+
+    cross_dataset = get_dataset(data_path, img_dir)
+    dataloaders, dataset_sizes = get_dataloaders(args, cross_dataset)
     print("Dataset Sizes: {}".format(dataset_sizes))
 
     model = PairFaceClassifier(base_model=args.base_model,
-                               img_ftrs=args.hidden_ftrs,
                                feature_extract=args.feature_extract,
                                dropout=args.dropout).double().to(device)
     criterion = nn.BCEWithLogitsLoss()
