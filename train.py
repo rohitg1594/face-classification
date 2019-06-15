@@ -93,7 +93,7 @@ def train_model(args, model, criterion, optimizer, scheduler, num_epochs=25):
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--data-path", type=str)
+    parser.add_argument("--data-path", type=str, default='data')
     parser.add_argument("--batch-size", type=int, default=16)
     parser.add_argument("--lr", type=float, default=0.001)
     parser.add_argument("--momentum", type=float, default=0.9)
