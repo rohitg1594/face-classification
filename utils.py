@@ -1,7 +1,9 @@
-from skimage import io, transform
+from skimage import io
 from os.path import join
+import os
 import random
 import matplotlib.pyplot as plt
+import pickle
 
 
 def get_image(name, img_dir, img_id):
@@ -59,8 +61,8 @@ def parse_pairs(f_name):
         num_sets, num_pairs = [int(p) for p in f.readline().strip().split()]
         subsets = []
         for i in range(num_sets):
-            subset = {'match': [f.readline().strip().split() for i in range(num_pairs)],
-                      'mismatch': [f.readline().strip().split() for i in range(num_pairs)]}
+            subset = {'match': [f.readline().strip().split() for _ in range(num_pairs)],
+                      'mismatch': [f.readline().strip().split() for _ in range(num_pairs)]}
             subsets.append(subset)
 
     return subsets
@@ -92,6 +94,21 @@ def create_dataset(data_path, img_dir):
         dataset.append(img_subset)
 
     return dataset
+
+
+def get_dataset(data_path):
+    cross_dataset_fname = join(data_path, 'cache/cross_dataset.pkl')
+    if os.path.exists(join(data_path, 'cache/cross_dataset.pkl')):
+        with open(cross_dataset_fname, 'rb') as f:
+            cross_dataset = pickle.load(f)
+    else:
+        cross_dataset = create_dataset(data_path, img_dir)
+        if not os.path.exists(join(data_path, 'cache')):
+            os.makedirs(join(data_path, 'cache'))
+        with open(cross_dataset_fname, 'wb') as f:
+            pickle.dump(cross_dataset, f)
+
+    return cross_dataset
 
 
 def set_parameter_requires_grad(model, feature_extracting):

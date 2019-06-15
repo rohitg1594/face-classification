@@ -1,10 +1,7 @@
-# Ignore warnings
 import warnings
 
 warnings.filterwarnings("ignore")
 
-import pickle
-import os
 import time
 import copy
 import argparse
@@ -98,6 +95,7 @@ def get_args():
     parser.add_argument("--data-path", type=str, default='data')
     parser.add_argument("--batch-size", type=int, default=16)
     parser.add_argument("--lr", type=float, default=0.001)
+    parser.add_argument("--dropout", type=float, default=0.3)
     parser.add_argument("--momentum", type=float, default=0.9)
     parser.add_argument("--base-model", type=str,
                         choices=['alexnet', 'squeezenet', 'resnet18', 'vgg16'],
@@ -112,24 +110,10 @@ def get_args():
     parser.add_argument("--valid-sets", type=eval, default=[9])
     parser.add_argument("--verbose", action="store_true", default=False)
     parser.add_argument("--feature-extract", action="store_true", default=False)
+
     args = parser.parse_args()
 
     return args
-
-
-def get_dataset(data_path):
-    cross_dataset_fname = join(data_path, 'cache/cross_dataset.pkl')
-    if os.path.exists(join(data_path, 'cache/cross_dataset.pkl')):
-        with open(cross_dataset_fname, 'rb') as f:
-            cross_dataset = pickle.load(f)
-    else:
-        cross_dataset = create_dataset(data_path, img_dir)
-        if not os.path.exists(join(data_path, 'cache')):
-            os.makedirs(join(data_path, 'cache'))
-        with open(cross_dataset_fname, 'wb') as f:
-            pickle.dump(cross_dataset, f)
-
-    return cross_dataset
 
 
 if __name__ == "__main__":
@@ -161,8 +145,9 @@ if __name__ == "__main__":
     print("Dataset Sizes: {}".format(dataset_sizes))
 
     model = PairFaceClassifier(base_model=args.base_model,
-                               hidden_ftrs=args.hidden_ftrs,
-                               feature_extract=args.feature_extract).double().to(device)
+                               img_ftrs=args.hidden_ftrs,
+                               feature_extract=args.feature_extract,
+                               dropout=args.dropout).double().to(device)
     criterion = nn.BCEWithLogitsLoss()
     optimizer_ft = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
 
