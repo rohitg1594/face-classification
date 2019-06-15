@@ -71,7 +71,7 @@ def create_dataset(data_path, img_dir):
     dataset = []
 
     for i, name_subset in enumerate(names):
-        print(f"Loading subset : {i + 1}")
+        print("Loading subset : {}".format(i * 1))
         img_subset = {'match': [],
                       'mismatch': []}
 
