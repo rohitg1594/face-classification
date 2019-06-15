@@ -103,6 +103,8 @@ def get_args():
     parser.add_argument("--hidden-ftrs", type=int, default=256)
     parser.add_argument("--num-epochs", type=int, default=25)
     parser.add_argument("--device", type=str, default=0)
+    parser.add_argument("--train-sets", type=eval, default=list(range(9)))
+    parser.add_argument("--valid-sets", type=eval, default=[9])
     args = parser.parse_args()
 
     return args
@@ -115,6 +117,8 @@ def get_dataset(data_path):
             cross_dataset = pickle.load(f)
     else:
         cross_dataset = create_dataset(data_path, img_dir)
+        if not os.path.exists(join(data_path, 'cache')):
+            os.makedirs(join(data_path, 'cache'))
         with open(cross_dataset_fname, 'wb') as f:
             pickle.dump(cross_dataset, f)
 
@@ -132,10 +136,10 @@ if __name__ == "__main__":
     cross_dataset = get_dataset(data_path)
 
     train_dataset = FaceDataset(cross_dataset,
-                                list(range(9)),
+                                args.train_sets,
                                 transform=transforms.Compose([Rescale(256), RandomCrop(224), ToTensor()]))
     valid_dataset = FaceDataset(cross_dataset,
-                                [9],
+                                args.valid_sets,
                                 transform=transforms.Compose([Rescale(256), RandomCrop(224), ToTensor()]))
     dataloaders = {'train': torch.utils.data.DataLoader(train_dataset,
                                                         batch_size=args.batch_size,
