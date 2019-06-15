@@ -101,6 +101,10 @@ def get_args():
                         choices=['alexnet', 'squeezenet', 'resnet18', 'vgg16'],
                         default='resnet18')
     parser.add_argument("--hidden-ftrs", type=int, default=256)
+    parser.add_argument("--rescale", type=int, default=256)
+    parser.add_argument("--crop", type=int, default=224)
+    parser.add_argument("--num_workers", type=int, default=4)
+    parser.add_argument("--num_workers", type=int, default=4)
     parser.add_argument("--num-epochs", type=int, default=25)
     parser.add_argument("--device", type=str, default=0)
     parser.add_argument("--train-sets", type=eval, default=list(range(9)))
@@ -137,18 +141,18 @@ if __name__ == "__main__":
 
     train_dataset = FaceDataset(cross_dataset,
                                 args.train_sets,
-                                transform=transforms.Compose([Rescale(256), RandomCrop(224), ToTensor()]))
+                                transform=transforms.Compose([Rescale(args.rescale), RandomCrop(args.crop), ToTensor()]))
     valid_dataset = FaceDataset(cross_dataset,
                                 args.valid_sets,
-                                transform=transforms.Compose([Rescale(256), RandomCrop(224), ToTensor()]))
+                                transform=transforms.Compose([Rescale(args.rescale), RandomCrop(args.crop), ToTensor()]))
     dataloaders = {'train': torch.utils.data.DataLoader(train_dataset,
                                                         batch_size=args.batch_size,
                                                         shuffle=True,
-                                                        num_workers=4),
+                                                        num_workers=args.num_workers),
                    'val': torch.utils.data.DataLoader(valid_dataset,
                                                       batch_size=args.batch_size,
-                                                      shuffle=True,
-                                                      num_workers=4)}
+                                                      shuffle=False,
+                                                      num_workers=args.num_workers)}
     dataset_sizes = {'train': len(train_dataset),
                      'val': len(valid_dataset)}
     print("Dataset Sizes: {}".format(dataset_sizes))
