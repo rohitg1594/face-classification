@@ -6,16 +6,16 @@ import matplotlib.pyplot as plt
 import pickle
 
 
+# Load image from disk
 def get_image(name, img_dir, img_id):
     img_name = '0' * (4 - len(img_id)) + img_id
 
     return io.imread(join(img_dir, name, '{}_{}.jpg'.format(name, img_name)))
 
 
+# First two columns plot n random matching faces, and the next two plot random mismatching faces.
 def visualize_dataset(dataset, n=5):
-    """
-    First two columns plot n random matching faces, and the next two plot random mismatching faces.
-    """
+
     subset_id = random.randint(0, 9)
     subset = dataset[subset_id]
 
@@ -40,6 +40,7 @@ def visualize_dataset(dataset, n=5):
         plt.imshow(subset['mismatch'][pair_id][1])
 
 
+# Plots a single sample that comes from dataloader
 def plot_sample(sample):
     img1, img2 = sample['img1'], sample['img2']
 
@@ -56,6 +57,7 @@ def plot_sample(sample):
         plt.suptitle('MISMATCH')
 
 
+# Parses pairs.txt file into cross validation format
 def parse_pairs(f_name):
     with open(f_name) as f:
         num_sets, num_pairs = [int(p) for p in f.readline().strip().split()]
@@ -68,6 +70,7 @@ def parse_pairs(f_name):
     return subsets
 
 
+# Creates a dataset split into subsets, that can be used for cross validation
 def create_dataset(data_path, img_dir):
     names = parse_pairs(join(data_path, 'pairs.txt'))
     dataset = []
@@ -96,6 +99,7 @@ def create_dataset(data_path, img_dir):
     return dataset
 
 
+# Looks for dataset in cache, otherwise computes it
 def get_dataset(data_path, img_dir):
     cross_dataset_fname = join(data_path, 'cache/cross_dataset.pkl')
     if os.path.exists(join(data_path, 'cache/cross_dataset.pkl')):
@@ -111,6 +115,7 @@ def get_dataset(data_path, img_dir):
     return cross_dataset
 
 
+# If using base model as feature extractor, then don't compute gradients
 def set_parameter_requires_grad(model, feature_extracting):
     if feature_extracting:
         for param in model.parameters():

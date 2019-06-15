@@ -2,7 +2,7 @@ import torch.nn as nn
 import torchvision
 import torch
 
-from utils import set_parameter_requires_grad
+from face.utils import set_parameter_requires_grad
 
 
 class PairFaceClassifier(nn.Module):

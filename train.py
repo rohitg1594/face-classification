@@ -13,10 +13,10 @@ import torch.optim as optim
 import torch.optim.lr_scheduler as lr_scheduler
 from torchvision import transforms
 
-from utils import *
-from model import PairFaceClassifier
-from dataset import FaceDataset
-from transforms import *
+from face.utils import *
+from face.model import PairFaceClassifier
+from face.dataset import FaceDataset
+from face.transforms import *
 
 
 def train_model(args, model, criterion, optimizer, scheduler, num_epochs=25):
@@ -41,7 +41,6 @@ def train_model(args, model, criterion, optimizer, scheduler, num_epochs=25):
 
             # Iterate over data.
             for i, sample in enumerate(dataloaders[phase]):
-                print("Batch Number: {}".format(i))
                 imgs1, imgs2, labels = sample['img1'], sample['img2'], sample['label']
                 imgs1 = imgs1.to(device)
                 imgs2 = imgs2.to(device)
@@ -66,7 +65,7 @@ def train_model(args, model, criterion, optimizer, scheduler, num_epochs=25):
                 running_corrects += correct
 
                 if args.verbose:
-                    print("Running Acc: {}".format(running_corrects.double() / (args.batch_size * (i + 1))))
+                    print("Batch number: {], Running Acc: {}".format(i, running_corrects.double() / (args.batch_size * (i + 1))))
 
             epoch_loss = running_loss / dataset_sizes[phase]
             epoch_acc = running_corrects.double() / dataset_sizes[phase]
@@ -81,35 +80,49 @@ def train_model(args, model, criterion, optimizer, scheduler, num_epochs=25):
         print()
 
     time_elapsed = time.time() - since
-    print('Training complete in {:.0f}m {:.0f}s'.format(
-        time_elapsed // 60, time_elapsed % 60))
+    print('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
     print('Best val Acc: {:4f}'.format(best_acc))
 
     # load best model weights
     model.load_state_dict(best_model_wts)
+
     return model
 
 
 def get_args():
     parser = argparse.ArgumentParser()
+
+    # Data params
     parser.add_argument("--data-path", type=str, default='data')
-    parser.add_argument("--batch-size", type=int, default=16)
-    parser.add_argument("--lr", type=float, default=0.001)
-    parser.add_argument("--dropout", type=float, default=0.3)
-    parser.add_argument("--momentum", type=float, default=0.9)
+    parser.add_argument("--train-sets", type=eval, default=list(range(9)), help="list of subsets to use for training")
+    parser.add_argument("--valid-sets", type=eval, default=[9], help="list of subsets to use for validation")
+    parser.add_argument("--num-workers", type=int, default=4)
+    parser.add_argument("--rescale", type=int, default=256)
+    parser.add_argument("--crop", type=int, default=224)
+
+    # Model type
     parser.add_argument("--base-model", type=str,
                         choices=['alexnet', 'squeezenet', 'resnet18', 'vgg16'],
                         default='resnet18')
+    parser.add_argument("--feature-extract",
+                        action="store_true",
+                        default=False,
+                        help="whether to use base model as feature extractor or do fine tuning")
+
+    # Model hyperparams
+    parser.add_argument("--lr", type=float, default=0.001)
+    parser.add_argument("--dropout", type=float, default=0.3)
+    parser.add_argument("--momentum", type=float, default=0.9)
     parser.add_argument("--hidden-ftrs", type=int, default=256)
-    parser.add_argument("--rescale", type=int, default=256)
-    parser.add_argument("--crop", type=int, default=224)
-    parser.add_argument("--num-workers", type=int, default=4)
+
+    # Training params
+    parser.add_argument("--batch-size", type=int, default=16)
     parser.add_argument("--num-epochs", type=int, default=50)
     parser.add_argument("--device", type=str, default=0)
-    parser.add_argument("--train-sets", type=eval, default=list(range(9)))
-    parser.add_argument("--valid-sets", type=eval, default=[9])
+
+    # Misc
     parser.add_argument("--verbose", action="store_true", default=False)
-    parser.add_argument("--feature-extract", action="store_true", default=False)
+    parser.add_argument("--exp-name", type=str, default='exp-{}'.format(random.randint(10 ** 5)))
 
     args = parser.parse_args()
 
