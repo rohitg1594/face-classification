@@ -3,7 +3,8 @@ Nanonets - Face classification interview problem
 
 ## Setup
 
-Run ```./setup.sh``` to setup the data dir. It will download the data from LFW's website.
+Run ```./setup.sh``` to setup the data dir. It will download the data from LFW's website. Depending on internet
+connection, might take some time.
 
 ## Training
 

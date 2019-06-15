@@ -122,7 +122,7 @@ def get_args():
 
     # Misc
     parser.add_argument("--verbose", action="store_true", default=False)
-    parser.add_argument("--exp-name", type=str, default='exp-{}'.format(random.randint(10 ** 5)))
+    parser.add_argument("--exp-name", type=str, default='exp-{}'.format(0, random.randint(10 ** 5)))
 
     args = parser.parse_args()
 
