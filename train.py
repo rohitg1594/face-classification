@@ -7,6 +7,7 @@ import pickle
 import os
 import time
 import copy
+import argparse
 
 import torch
 from torch.utils.data import Dataset
@@ -18,11 +19,6 @@ from utils import *
 from model import PairFaceClassifier
 from dataset import FaceDataset
 from transforms import *
-
-
-data_path = "/home/rohit/Documents/Job_Search/face-classification/data"
-img_dir = join(data_path, "lfw-deepfunneled")
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
@@ -62,6 +58,7 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
                 with torch.set_grad_enabled(phase == 'train'):
                     outputs = model((imgs1, imgs2))
                     _, preds = torch.max(outputs, 1)
+                    print(f"preds: {preds}")
                     loss = criterion(outputs, labels.unsqueeze(dim=1).double())
 
                     # backward + optimize only if in training phase
@@ -96,33 +93,41 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
     return model
 
 
-cross_dataset_fname = join(data_path, 'cache/cross_dataset.pkl')
-if os.path.exists(join(data_path, 'cache/cross_dataset.pkl')):
-    with open(cross_dataset_fname, 'rb') as f:
-        cross_dataset = pickle.load(f)
-else:
-    cross_dataset = create_dataset(data_path, img_dir)
-    with open(cross_dataset_fname, 'wb') as f:
-        pickle.dump(cross_dataset, f)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--data-path", type=str)
+    args = parser.parse_args()
 
+    data_path = args.data_path
+    img_dir = join(data_path, "lfw-deepfunneled")
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-train_dataset = FaceDataset(cross_dataset,
-                            list(range(1)),
-                            transform=transforms.Compose([Rescale(256), RandomCrop(224), ToTensor()]))
-valid_dataset = FaceDataset(cross_dataset,
-                            [9],
-                            transform=transforms.Compose([Rescale(256), RandomCrop(224), ToTensor()]))
-dataloaders = {'train': torch.utils.data.DataLoader(train_dataset, batch_size=16, shuffle=True, num_workers=4),
-               'valid': torch.utils.data.DataLoader(valid_dataset, batch_size=16, shuffle=True, num_workers=4)}
-dataset_sizes = {'train': len(train_dataset),
-                 'valid': len(valid_dataset)}
-print(f"Dataset Sizes: {dataset_sizes}")
+    cross_dataset_fname = join(data_path, 'cache/cross_dataset.pkl')
+    if os.path.exists(join(data_path, 'cache/cross_dataset.pkl')):
+        with open(cross_dataset_fname, 'rb') as f:
+            cross_dataset = pickle.load(f)
+    else:
+        cross_dataset = create_dataset(data_path, img_dir)
+        with open(cross_dataset_fname, 'wb') as f:
+            pickle.dump(cross_dataset, f)
 
-model = PairFaceClassifier().double().to(device)
-criterion = nn.BCEWithLogitsLoss()
-optimizer_ft = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+    train_dataset = FaceDataset(cross_dataset,
+                                list(range(1)),
+                                transform=transforms.Compose([Rescale(256), RandomCrop(224), ToTensor()]))
+    valid_dataset = FaceDataset(cross_dataset,
+                                [9],
+                                transform=transforms.Compose([Rescale(256), RandomCrop(224), ToTensor()]))
+    dataloaders = {'train': torch.utils.data.DataLoader(train_dataset, batch_size=16, shuffle=True, num_workers=4),
+                   'val': torch.utils.data.DataLoader(valid_dataset, batch_size=16, shuffle=True, num_workers=4)}
+    dataset_sizes = {'train': len(train_dataset),
+                     'val': len(valid_dataset)}
+    print(f"Dataset Sizes: {dataset_sizes}")
 
-# Decay LR by a factor of 0.1 every 7 epochs
-exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft, step_size=7, gamma=0.1)
+    model = PairFaceClassifier().double().to(device)
+    criterion = nn.BCEWithLogitsLoss()
+    optimizer_ft = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
-model = train_model(model, criterion, optimizer_ft, exp_lr_scheduler, num_epochs=25)
+    # Decay LR by a factor of 0.1 every 7 epochs
+    exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft, step_size=7, gamma=0.1)
+
+    model = train_model(model, criterion, optimizer_ft, exp_lr_scheduler, num_epochs=25)
