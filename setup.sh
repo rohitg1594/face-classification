@@ -19,3 +19,5 @@ tar -xzvf lfw-deepfunneled.tgz
 
 rm lfw.tgz
 rm lfw-deepfunneled.tgz
+
+pip install -r requirements.txt

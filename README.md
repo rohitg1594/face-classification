@@ -2,8 +2,8 @@
 Nanonets - Face classification interview problem.
 
 ## Setup
-Run ```./setup.sh``` to setup the data dir. It will download the data from LFW's website. Depending on internet
-connection, might take some time.
+Run ```./setup.sh``` to setup the data dir. It will download the data from LFW's website and install all the 
+dependencies. Depending on internet connection, it might take some time.
 
 ## Dataset
 The dataset is constructed based on the pairs.txt file on LFW website. It is split into 10 subsets of 600 pairs each.
