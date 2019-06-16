@@ -109,10 +109,10 @@ def get_args():
     parser.add_argument("--base-model", type=str,
                         choices=['alexnet', 'resnet18', 'vgg16'],
                         default='resnet18')
-    parser.add_argument("--feature-extract",
+    parser.add_argument("--finetune",
                         action="store_true",
                         default=False,
-                        help="whether to use base model as feature extractor or do fine tuning")
+                        help="whether to use base model as fine tuning instead of feature extraction")
 
     # Model hyperparams
     parser.add_argument("--lr", type=float, default=0.001)
@@ -158,6 +158,11 @@ def get_dataloaders(args, cross_dataset):
 if __name__ == "__main__":
 
     args = get_args()
+    print()
+    for arg in sorted(vars(args)):
+        print('{:<15}\t{}'.format(arg, getattr(args, arg)))
+    print()
+    
     data_path = args.data_path
     img_dir = join(data_path, args.img_type)
     device = torch.device("cuda:{}".format(args.device) if torch.cuda.is_available() and args.device != "cpu" else "cpu")
@@ -168,7 +173,7 @@ if __name__ == "__main__":
     print("Dataset Sizes: {}".format(dataset_sizes))
 
     model = PairFaceClassifier(base_model=args.base_model,
-                               feature_extract=args.feature_extract,
+                               feature_extract=not args.finetune,
                                dropout=args.dropout).double().to(device)
     criterion = nn.BCEWithLogitsLoss()
     optimizer_ft = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
