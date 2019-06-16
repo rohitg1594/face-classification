@@ -1,5 +1,7 @@
 #!/bin/sh
 
+pip install -r requirements.txt
+
 mkdir data
 mkdir data/cache
 mkdir data/models
@@ -19,5 +21,3 @@ tar -xzvf lfw-deepfunneled.tgz
 
 rm lfw.tgz
 rm lfw-deepfunneled.tgz
-
-pip install -r requirements.txt
