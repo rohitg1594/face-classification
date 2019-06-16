@@ -11,7 +11,6 @@ Of these 300 are matching and 300 do not match. We take the first 9 subets for t
 This results in a train set of size 5400 pairs and a valid set of size 600 pairs. Valid and train sets can be changed using 
 ```--valid-sets``` and ```--test-sets``` options in ```train.py```.
  
-
 ## Training
 
 Running ```python3 train.py``` with default hyperparmeters will run for 50 epochs and will take ~2 hours with GPU.

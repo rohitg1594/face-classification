@@ -162,7 +162,7 @@ if __name__ == "__main__":
     for arg in sorted(vars(args)):
         print('{:<15}\t{}'.format(arg, getattr(args, arg)))
     print()
-    
+
     data_path = args.data_path
     img_dir = join(data_path, args.img_type)
     device = torch.device("cuda:{}".format(args.device) if torch.cuda.is_available() and args.device != "cpu" else "cpu")
