@@ -7,8 +7,8 @@ connection, might take some time.
 
 ## Dataset
 The dataset is constructed based on the pairs.txt file on LFW website. It is split into 10 subsets of 600 pairs each.
-Of these 300 are matchin and 300 do not match. We take the first 9 subets for training and the last subset for validation.
-This results in a train set of size 5400 and a valid set of size 600. Valid and train sets can be changed using 
+Of these 300 are matching and 300 do not match. We take the first 9 subets for training and the last subset for validation.
+This results in a train set of size 5400 pairs and a valid set of size 600 pairs. Valid and train sets can be changed using 
 ```--valid-sets``` and ```--test-sets``` options in ```train.py```.
  
 
